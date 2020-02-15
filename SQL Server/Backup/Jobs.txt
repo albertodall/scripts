@@ -1,0 +1,72 @@
+FULL
+
+-- Elimina vecchi backup full
+DECLARE @DBName sysname = DB_NAME()
+DECLARE @BackupFolder varchar(255) = 'F:\SqlBackups\'
+DECLARE @RetainDays int = 0
+EXEC master.dbo.sp_retain_backups @DBName, @BackupFolder, @RetainDays
+
+-- Full backup
+DECLARE @dbName varchar(64)
+DECLARE @backupFolder varchar(255)
+DECLARE @backupType varchar(4)
+
+SET @dbName = DB_NAME()
+SET @backupFolder = 'F:\SqlBackups\'
+SET @backupType = 'Full'
+
+EXEC master.dbo.sp_backup_database @dbName, @backupFolder, @backupType
+
+
+
+DIFF BACKUP
+
+-- Elimina vecchi backup T-Log
+DECLARE @dbName sysname
+DECLARE @backupFolder varchar(255)
+DECLARE @path varchar(255)
+DECLARE @cmd varchar(255)
+
+SET @dbName = DB_NAME()
+SET @backupFolder = 'F:\SqlBackups\'
+SET @path = @backupFolder + @dbName + '\' + CONVERT(char(8), getdate(), 112)
+SET @cmd = 'del /Q ' + @path + '\*.TRN'
+
+EXEC master..xp_cmdshell @cmd
+
+-- Diff backup
+DECLARE @dbName sysname
+DECLARE @backupFolder varchar(255)
+DECLARE @backupType varchar(4)
+
+SET @dbName = DB_NAME()
+SET @backupFolder = 'F:\SqlBackups\'
+SET @backupType = 'Diff'
+
+EXEC master.dbo.sp_backup_database @dbName, @backupFolder, @backupType
+
+-- Elimina vecchi backup diff
+DECLARE @dbName sysname
+DECLARE @backupFolder varchar(255)
+DECLARE @path varchar(255)
+
+SET @dbName = DB_NAME()
+SET @backupFolder = 'F:\SqlBackups\'
+SET @path = @backupFolder + @dbName + '\' + CONVERT(char(8), getdate(), 112) + '\'
+
+EXEC master.dbo.sp_delete_old_differential_backups @dbName, @path
+
+
+T-LOG BACKUP
+
+DECLARE @dbName sysname
+DECLARE @backupFolder varchar(255)
+DECLARE @backupType varchar(4)
+
+SET @dbName = DB_NAME()
+SET @backupFolder = 'F:\SqlBackups\'
+SET @backupType = 'Log'
+
+EXEC master.dbo.sp_backup_database @dbName, @backupFolder, @backupType
+
+
